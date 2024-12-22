@@ -3,7 +3,6 @@ mod error;
 mod fabric;
 
 use self::{command::Command, error::Error, fabric::Fabric};
-use anyhow::Result;
 use std::sync::Arc;
 use tokio::{
     io::{AsyncBufReadExt, AsyncWriteExt, BufReader},
@@ -14,7 +13,7 @@ use tokio::{
 pub type ThreadSafeFabric = Arc<RwLock<Fabric>>;
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> Result<(), Error> {
     // Start listening for TCP connections at localhost on port 8731
     // TODO / NOTE: This should be configurable, both the ip address and the port.
     let tcp_listener = TcpListener::bind("127.0.0.1:8731").await?;
