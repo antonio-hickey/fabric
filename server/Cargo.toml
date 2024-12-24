@@ -1,11 +1,11 @@
 [package]
-name = "fabric-client"
+name = "fabric-cache"
 version = "0.1.0"
 edition = "2021"
 authors = ["Antonio Hickey <contact@antoniohickey.com>"]
-description = "Client for interacting with a fabric server."
-documentation = "https://docs.rs/fabric-client/latest/fabric-client/index.html"
-homepage = "https://crates.io/crates/fabric-client"
+description = "In-Memory datastructure cache."
+documentation = "https://docs.rs/fabric/latest/fabric/index.html"
+homepage = "https://crates.io/crates/fabric"
 repository = "https://github.com/antonio-hickey/fabric"
 readme = "README.md"
 keywords = ["fabric", "data", "cache", "keyval"]
@@ -15,5 +15,4 @@ include = ["README.md", "src/**/*", "examples/**/*"]
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde_json = "1.0.133"
