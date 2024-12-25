@@ -7,6 +7,7 @@ pub enum Error {
     IO(std::io::Error),
     BadDataStructure(serde_json::Error),
     UnsupportedCommand(String),
+    InvalidKeyPath(String),
 }
 impl StdErrorTrait for Error {}
 /// Implement display trait for `Error`
@@ -18,6 +19,9 @@ impl std::fmt::Display for Error {
             Error::IO(e) => write!(f, "IO Error:\n {}", e),
             Error::BadDataStructure(e) => write!(f, "Bad Data Structure: Error:\n {}", e),
             Error::UnsupportedCommand(cmd) => write!(f, "\"{}\" Is Not A Supported Command.", cmd),
+            Error::InvalidKeyPath(key_path) => {
+                write!(f, "\"{}\" Is Not A Valid Key Path.", key_path)
+            }
         }
     }
 }

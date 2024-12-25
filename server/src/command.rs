@@ -28,14 +28,8 @@ impl Command {
         match self {
             Command::Get => {
                 let key = line.strip_prefix("GET ").unwrap_or("");
-                let value = {
-                    let data = fabric.read().await;
-                    data.structures
-                        .get(key)
-                        .cloned()
-                        .ok_or_else(|| Error::KeyNotFound(key.to_string()))
-                }?;
-
+                let keys = key.split('.').collect();
+                let value = fabric.read().await.get(keys)?;
                 let bytes = value.to_string().into_bytes();
 
                 Ok(bytes)
@@ -49,13 +43,10 @@ impl Command {
 
                 if parts.len() == 2 {
                     let key = parts[0].to_string();
+                    let keys = key.split('.').collect();
                     let value = parts[1].to_string();
-                    {
-                        let mut data = fabric.write().await;
-                        let value = serde_json::from_str(&value)?;
 
-                        data.structures.insert(key, value);
-                    }
+                    fabric.write().await.set(keys, &value)?;
 
                     Ok("OK\n".as_bytes().to_vec())
                 } else {

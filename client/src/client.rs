@@ -42,8 +42,8 @@ impl FabricClient {
 
     /// Perform the GET command on a provided key to
     /// grab the current value of the key.
-    pub async fn get<S: Into<String>>(&mut self, key: &str) -> Result<Value, Error> {
-        let command = format!("GET {}\n", key);
+    pub async fn get<S: Into<String>>(&mut self, key: S) -> Result<Value, Error> {
+        let command = format!("GET {}\n", key.into());
         self.stream.write_all(command.as_bytes()).await?;
         self.stream.flush().await?;
 
