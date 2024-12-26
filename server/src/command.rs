@@ -2,10 +2,12 @@ use crate::{Error, ThreadSafeFabric};
 
 /// The different types of supported commands
 pub enum Command {
-    /// Get a data structure
+    /// Get an entry in cache
     Get,
-    /// Set a data structure
+    /// Set an entry in cache
     Set,
+    /// Remove an entry from cache
+    Remove,
 }
 impl Command {
     /// Initialize a command from client input
@@ -15,6 +17,8 @@ impl Command {
             Ok(Command::Get)
         } else if trimmed.starts_with("SET") {
             Ok(Command::Set)
+        } else if trimmed.starts_with("REMOVE") {
+            Ok(Command::Remove)
         } else {
             let parts: Vec<&str> = trimmed.split(" ").collect();
             let cmd = parts[0].to_string();
@@ -52,6 +56,14 @@ impl Command {
                 } else {
                     Ok("Invalid SET Command\n".as_bytes().to_vec())
                 }
+            }
+            Command::Remove => {
+                let key = line.strip_prefix("REMOVE ").unwrap_or("");
+                let keys = key.split('.').collect();
+
+                fabric.write().await.remove(keys)?;
+
+                Ok("OK\n".as_bytes().to_vec())
             }
         }
     }

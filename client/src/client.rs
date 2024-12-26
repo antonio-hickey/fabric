@@ -54,4 +54,22 @@ impl FabricClient {
         let value = serde_json::from_str(&response)?;
         Ok(value)
     }
+
+    /// Perform the REMOVE command on a provided key to
+    /// remove the key/value pair from cache.
+    pub async fn remove(&mut self, key: &str) -> Result<(), Error> {
+        let command = format!("REMOVE {}\n", key);
+        self.stream.write_all(command.as_bytes()).await?;
+        self.stream.flush().await?;
+
+        let mut buffer = vec![0; 512];
+        let n = self.stream.read(&mut buffer).await?;
+
+        let resp = String::from_utf8_lossy(&buffer[..n]);
+        if resp.contains("OK") {
+            Ok(())
+        } else {
+            Err(Error::Unknown(resp.to_string()))
+        }
+    }
 }
