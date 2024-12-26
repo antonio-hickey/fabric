@@ -1,6 +1,6 @@
 [package]
 name = "fabric-cache"
-version = "0.1.1"
+version = "0.1.3"
 edition = "2021"
 authors = ["Antonio Hickey <contact@antoniohickey.com>"]
 description = "In-Memory datastructure cache."
