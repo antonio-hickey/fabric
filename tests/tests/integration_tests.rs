@@ -59,8 +59,7 @@ async fn can_handle_basic_use() {
         let cache_key = format!("coordinates.{}", key);
 
         let expected_coordinates = coordinates.get(key).unwrap();
-        let actual_coordinates: ThreeDimensionalCoordinate =
-            serde_json::from_value(client.get(&cache_key).await.unwrap()).unwrap();
+        let actual_coordinates: ThreeDimensionalCoordinate = client.get(&cache_key).await.unwrap();
 
         // Grab the coordinates from cache and verify they're as expected
         assert_eq!(expected_coordinates.x, actual_coordinates.x);
@@ -69,8 +68,7 @@ async fn can_handle_basic_use() {
 
         // Change the x coordinate and regrab it to make sure it was updated
         client.set(&format!("{}.x", cache_key), &12).await.unwrap();
-        let actual_coordinates: ThreeDimensionalCoordinate =
-            serde_json::from_value(client.get(&cache_key).await.unwrap()).unwrap();
+        let actual_coordinates: ThreeDimensionalCoordinate = client.get(&cache_key).await.unwrap();
         assert_eq!(12, actual_coordinates.x);
     }
 }
@@ -135,8 +133,7 @@ async fn can_handle_nested_structs() {
         let cache_key = format!("users.{}", key);
 
         let expected_user = users.get(key).unwrap();
-        let actual_user: NestedTestStruct =
-            serde_json::from_value(client.get(&cache_key).await.unwrap()).unwrap();
+        let actual_user: NestedTestStruct = client.get(&cache_key).await.unwrap();
 
         assert_eq!(expected_user.id, actual_user.id);
         assert_eq!(expected_user.age, actual_user.age);
@@ -167,8 +164,7 @@ async fn can_handle_nested_structs() {
             .set(&format!("{}.billing", &cache_key), &new_billing_info)
             .await
             .unwrap();
-        let actual_user: NestedTestStruct =
-            serde_json::from_value(client.get(&cache_key).await.unwrap()).unwrap();
+        let actual_user: NestedTestStruct = client.get(&cache_key).await.unwrap();
         assert_eq!(new_billing_info.address, actual_user.billing.address);
         assert_eq!(new_billing_info.state, actual_user.billing.state);
         assert_eq!(new_billing_info.city, actual_user.billing.city);

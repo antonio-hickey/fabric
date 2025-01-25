@@ -1,6 +1,5 @@
 use crate::Error;
-use serde::Serialize;
-use serde_json::Value;
+use serde::{Deserialize, Serialize};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::TcpStream,
@@ -42,7 +41,13 @@ impl FabricClient {
 
     /// Perform the GET command on a provided key to
     /// grab the current value of the key.
-    pub async fn get<S: Into<String>>(&mut self, key: S) -> Result<Value, Error> {
+    ///
+    /// NOTE: You must specify your return type and it
+    /// needs to implement the `serde::Deserialize` trait.
+    pub async fn get<S: Into<String>, T>(&mut self, key: S) -> Result<T, Error>
+    where
+        T: for<'de> Deserialize<'de>,
+    {
         let command = format!("GET {}\n", key.into());
         self.stream.write_all(command.as_bytes()).await?;
         self.stream.flush().await?;
@@ -51,7 +56,7 @@ impl FabricClient {
         let n = self.stream.read(&mut buffer).await?;
         let response = String::from_utf8_lossy(&buffer[..n]).to_string();
 
-        let value = serde_json::from_str(&response)?;
+        let value: T = serde_json::from_str(&response)?;
         Ok(value)
     }
 
@@ -122,7 +127,7 @@ mod tests {
         let mut client = FabricClient::connect(&addr).await.unwrap();
 
         let key = "test_key";
-        let result = client.get(key).await;
+        let result: Result<String, Error> = client.get(key).await;
 
         assert!(result.is_ok());
         let value = result.unwrap();
