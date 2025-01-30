@@ -11,7 +11,7 @@ pub struct FabricClient {
 }
 impl FabricClient {
     /// Open a connection to your fabric server.
-    pub async fn connect(addr: &str) -> tokio::io::Result<Self> {
+    pub async fn connect(addr: &str) -> Result<Self, Error> {
         let stream = TcpStream::connect(addr).await?;
         Ok(FabricClient { stream })
     }

@@ -16,7 +16,7 @@ cargo install fabric-client
 Or manually add it into your Cargo.toml:
 ```toml
 [dependencies]
-fabric-client = "0.1.3"
+fabric-client = "0.1.4"
 ```
 
 Usage
@@ -44,7 +44,7 @@ struct Player {
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     // Create a connection with the fabric-cache server
-    let mut cache = FabricClient::connect("127.0.0.1:8731").await.unwrap();
+    let mut cache = FabricClient::connect("127.0.0.1:8731").await?;
 
     // Some dummy data for the example
     let players = vec![
