@@ -1,19 +1,26 @@
 use crate::Error;
 use serde::{Deserialize, Serialize};
 use tokio::{
-    io::{AsyncReadExt, AsyncWriteExt},
-    net::TcpStream,
+    io::{AsyncBufReadExt, AsyncWriteExt, BufReader, BufWriter},
+    net::{
+        tcp::{OwnedReadHalf, OwnedWriteHalf},
+        TcpStream,
+    },
 };
 
 /// Client for interacting with your fabric server
 pub struct FabricClient {
-    stream: TcpStream,
+    reader: BufReader<OwnedReadHalf>,
+    writer: BufWriter<OwnedWriteHalf>,
 }
 impl FabricClient {
     /// Open a connection to your fabric server.
     pub async fn connect(addr: &str) -> Result<Self, Error> {
         let stream = TcpStream::connect(addr).await?;
-        Ok(FabricClient { stream })
+        let (read_half, write_half) = stream.into_split();
+        let reader = BufReader::new(read_half);
+        let writer = BufWriter::new(write_half);
+        Ok(FabricClient { reader, writer })
     }
 
     /// Perform the SET command on a provided key to
@@ -25,17 +32,20 @@ impl FabricClient {
         let serialized_data = serde_json::to_string(value).map_err(Error::BadDataStructure)?;
 
         let command = format!("SET {} {}\n", key, serialized_data);
-        self.stream.write_all(command.as_bytes()).await?;
-        self.stream.flush().await?;
+        self.writer.write_all(command.as_bytes()).await?;
+        self.writer.flush().await?;
 
-        let mut buffer = vec![0; 512];
-        let n = self.stream.read(&mut buffer).await?;
+        let mut resp = String::new();
+        let bytes = self.reader.read_line(&mut resp).await?;
 
-        let resp = String::from_utf8_lossy(&buffer[..n]);
+        if bytes == 0 {
+            return Err(Error::Unknown("Disconnected".into()));
+        }
+
         if resp.contains("OK") {
             Ok(())
         } else {
-            Err(Error::Unknown(resp.to_string()))
+            Err(Error::Unknown(resp))
         }
     }
 
@@ -49,14 +59,13 @@ impl FabricClient {
         T: for<'de> Deserialize<'de>,
     {
         let command = format!("GET {}\n", key.into());
-        self.stream.write_all(command.as_bytes()).await?;
-        self.stream.flush().await?;
+        self.writer.write_all(command.as_bytes()).await?;
+        self.writer.flush().await?;
 
-        let mut buffer = vec![0; 512];
-        let n = self.stream.read(&mut buffer).await?;
-        let response = String::from_utf8_lossy(&buffer[..n]).to_string();
+        let mut resp = String::new();
+        self.reader.read_line(&mut resp).await?;
 
-        let value: T = serde_json::from_str(&response)?;
+        let value: T = serde_json::from_str(&resp)?;
         Ok(value)
     }
 
@@ -64,17 +73,16 @@ impl FabricClient {
     /// remove the key/value pair from cache.
     pub async fn remove(&mut self, key: &str) -> Result<(), Error> {
         let command = format!("REMOVE {}\n", key);
-        self.stream.write_all(command.as_bytes()).await?;
-        self.stream.flush().await?;
+        self.writer.write_all(command.as_bytes()).await?;
+        self.writer.flush().await?;
 
-        let mut buffer = vec![0; 512];
-        let n = self.stream.read(&mut buffer).await?;
+        let mut resp = String::new();
+        self.reader.read_line(&mut resp).await?;
 
-        let resp = String::from_utf8_lossy(&buffer[..n]);
         if resp.contains("OK") {
             Ok(())
         } else {
-            Err(Error::Unknown(resp.to_string()))
+            Err(Error::Unknown(resp))
         }
     }
 }
