@@ -33,37 +33,37 @@ impl Command {
             Command::Get => {
                 let key = line.strip_prefix("GET ").unwrap_or("");
                 let keys = key.split('.').collect();
-                let value = fabric.read().await.get(keys)?;
-                let bytes = value.to_string().into_bytes();
-
-                Ok(bytes)
+                match fabric.read().await.get(keys) {
+                    Ok(value) => Ok(format!("{}\n", value).into_bytes()),
+                    Err(_) => Ok(format!("{}\n", Error::KeyNotFound(key.into())).into_bytes()),
+                }
             }
             Command::Set => {
-                let parts: Vec<&str> = line
-                    .strip_prefix("SET ")
-                    .unwrap_or("")
-                    .splitn(2, ' ')
-                    .collect();
+                let line = line.trim_end();
+                let cmd_str = line.strip_prefix("SET ").unwrap_or("");
+                let parts: Vec<&str> = cmd_str.splitn(2, ' ').collect();
 
                 if parts.len() == 2 {
                     let key = parts[0].to_string();
                     let keys = key.split('.').collect();
                     let value = parts[1].to_string();
 
-                    fabric.write().await.set(keys, &value)?;
-
-                    Ok("OK\n".as_bytes().to_vec())
+                    match fabric.write().await.set(keys, &value) {
+                        Ok(_) => Ok(b"OK\n".to_vec()),
+                        Err(e) => Ok(format!("SET ERROR For Key: {key}: {e:?}").into_bytes()),
+                    }
                 } else {
-                    Ok("Invalid SET Command\n".as_bytes().to_vec())
+                    Ok(b"Invalid SET Command\n".to_vec())
                 }
             }
             Command::Remove => {
                 let key = line.strip_prefix("REMOVE ").unwrap_or("");
                 let keys = key.split('.').collect();
 
-                fabric.write().await.remove(keys)?;
-
-                Ok("OK\n".as_bytes().to_vec())
+                match fabric.write().await.remove(keys) {
+                    Ok(_) => Ok(b"OK\n".to_vec()),
+                    Err(e) => Ok(format!("REMOVE Error For Key: {key}: {e:?}").into_bytes()),
+                }
             }
         }
     }
