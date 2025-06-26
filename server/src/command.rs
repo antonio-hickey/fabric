@@ -34,7 +34,7 @@ impl Command {
                 let key = line.strip_prefix("GET ").unwrap_or("");
                 let keys = key.split('.').collect();
                 match fabric.read().await.get(keys) {
-                    Ok(value) => Ok(format!("{}\n", value).into_bytes()),
+                    Ok(value) => Ok(format!("{value}\n").into_bytes()),
                     Err(_) => Ok(format!("{}\n", Error::KeyNotFound(key.into())).into_bytes()),
                 }
             }

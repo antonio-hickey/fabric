@@ -13,11 +13,11 @@ impl std::fmt::Display for Error {
     /// The error message display format
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Error::KeyNotFound(key) => write!(f, "Key: \"{}\" Not Found.", key),
-            Error::IO(e) => write!(f, "IO Error:\n {}", e),
-            Error::BadDataStructure(e) => write!(f, "Bad Data Structure: Error:\n {}", e),
-            Error::UnsupportedCommand(cmd) => write!(f, "\"{}\" Is Not A Supported Command.", cmd),
-            Error::Unknown(err_msg) => write!(f, "Unknown Error:\n {}", err_msg),
+            Error::KeyNotFound(key) => write!(f, "Key: \"{key}\" Not Found."),
+            Error::IO(e) => write!(f, "IO Error:\n {e}"),
+            Error::BadDataStructure(e) => write!(f, "Bad Data Structure: Error:\n {e}"),
+            Error::UnsupportedCommand(cmd) => write!(f, "\"{cmd}\" Is Not A Supported Command."),
+            Error::Unknown(e) => write!(f, "Unknown Error:\n {e}"),
         }
     }
 }

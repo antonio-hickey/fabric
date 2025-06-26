@@ -31,7 +31,7 @@ async fn main() -> Result<(), Error> {
         // Start the server and handle the client streams
         tokio::spawn(async move {
             if let Err(e) = handle_client(socket, fabric).await {
-                eprintln!("Error handling client: {:?}", e);
+                eprintln!("Error handling client: {e:?}");
             }
         });
     }

@@ -31,7 +31,7 @@ impl FabricClient {
     pub async fn set<T: Serialize>(&mut self, key: &str, value: &T) -> Result<(), Error> {
         let serialized_data = serde_json::to_string(value).map_err(Error::BadDataStructure)?;
 
-        let command = format!("SET {} {}\n", key, serialized_data);
+        let command = format!("SET {key} {serialized_data}\n");
         self.writer.write_all(command.as_bytes()).await?;
         self.writer.flush().await?;
 
@@ -72,7 +72,7 @@ impl FabricClient {
     /// Perform the REMOVE command on a provided key to
     /// remove the key/value pair from cache.
     pub async fn remove(&mut self, key: &str) -> Result<(), Error> {
-        let command = format!("REMOVE {}\n", key);
+        let command = format!("REMOVE {key}\n");
         self.writer.write_all(command.as_bytes()).await?;
         self.writer.flush().await?;
 
