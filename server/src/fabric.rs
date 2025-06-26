@@ -23,17 +23,16 @@ impl Fabric {
         let mut current_value = self
             .cache
             .get(keys[0])
-            .cloned()
             .ok_or_else(|| Error::InvalidKeyPath(keys.join(".")))?;
 
         for key in keys.iter().skip(1) {
             current_value = current_value
                 .as_object()
-                .and_then(|obj| obj.get(*key).cloned())
+                .and_then(|obj| obj.get(*key))
                 .ok_or_else(|| Error::InvalidKeyPath(keys.join(".")))?;
         }
 
-        Ok(current_value)
+        Ok(current_value.to_owned())
     }
 
     /// Set a value in the cache.
